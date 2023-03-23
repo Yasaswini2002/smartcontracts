@@ -1,0 +1,27 @@
+// SPDX-License-Identifier: GPL-3.0
+
+pragma solidity >=0.7.0 <0.9.0;
+contract samplyArray {
+    uint[] public myArray; 
+    uint[] public myArray2 = [1, 2, 3]; 
+    uint[10] public myFixedSizeArray; 
+    uint[] intergerArray;       
+    bool[] boolArray;           
+    address[] addressArray;     
+    
+    function pushistoAdd(uint i) public {
+        myArray.push(i); 
+    }
+    function getIteminArray(uint index) public view returns (uint) {
+        myArray[index]; 
+    }
+    function updatethearray(uint locationinarray, uint valuetochangeto) public {
+        myArray[locationinarray] = valuetochangeto;
+    } 
+    function remove(uint index) public {
+        delete myArray[index]; 
+    }
+    function getLength() public view returns (uint) {
+        return myArray.length; 
+    }
+}
