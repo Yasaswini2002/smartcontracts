@@ -1,0 +1,63 @@
+// SPDX-License-Identifier: GPL-3.0
+
+pragma solidity >=0.8.2 <0.9.0;
+contract Crowdfunding {
+    
+    address public manager;
+    uint public target;
+    uint public deadline;
+    uint public minContribution;
+    mapping(address => uint) public contributions;
+    mapping(address => bool) public voted;
+    uint public yesVotes;
+    uint public noVotes;
+    bool public canWithdraw;
+    address payable public recipient;
+    bool public refundInitiated;
+    
+    constructor(uint _target, uint _deadline, uint _minContribution, address payable _recipient) {
+        manager = msg.sender;
+        target = _target;
+        deadline = block.timestamp + _deadline;
+        minContribution = _minContribution;
+        recipient = _recipient;
+        canWithdraw = false;
+        refundInitiated = false;
+    }
+    
+    function contribute() public payable {
+        require(msg.value >= minContribution, "Minimum contribution not met");
+        require(block.timestamp <= deadline, "Deadline for contributions has passed");
+        contributions[msg.sender] += msg.value;
+    }
+    
+    function voteYes() public {
+        require(contributions[msg.sender] > 0, "You must contribute before you can vote");
+        require(!voted[msg.sender], "You have already voted");
+        voted[msg.sender] = true;
+        yesVotes += 1;
+    }
+    
+    function voteNo() public {
+        require(contributions[msg.sender] > 0, "You must contribute before you can vote");
+        require(!voted[msg.sender], "You have already voted");
+        voted[msg.sender] = true;
+        noVotes += 1;
+    }
+    
+    function withdraw() public {
+        require(canWithdraw, "Withdrawal is not yet available");
+        require(yesVotes > noVotes, "Not enough votes to withdraw funds");
+        recipient.transfer(address(this).balance);
+    }
+    
+    function initiateRefund() public {
+        require(block.timestamp > deadline, "Deadline for contributions has not passed");
+        require(address(this).balance < target, "Target amount has been reached");
+        require(!refundInitiated, "Refund has already been initiated");
+        refundInitiated = true;
+        uint contribution = contributions[msg.sender];
+        contributions[msg.sender] = 0;
+        payable(msg.sender).transfer(contribution);
+    }
+}
